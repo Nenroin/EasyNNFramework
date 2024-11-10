@@ -28,12 +28,12 @@ data_source = ModelDataSource(
     train_data=(x_train, y_train),
     test_data=(x_test, y_test),
     train_data_augmentations=[
-        data_augmentation.scaling_pil(
-            copies=1
-        ),
-        data_augmentation.cropping(
-            copies=1
-        ),
+        # data_augmentation.scaling_pil(
+        #     copies=1
+        # ),
+        # data_augmentation.cropping(
+        #     copies=1
+        # ),
     ],
     data_augmentations=[
         data_augmentation.flatten(),
@@ -44,16 +44,13 @@ data_source = ModelDataSource(
     batch_size=batch_size,
 )
 
-model = CustomSequentialModel(
+model = SequentialModel(
     layers=[
         InputLayer(784),
         LinearLayer(256,
                     activation=relu(),
                     prev_weights_initializer=he_initializer(),
                     ),
-        # DropoutLayer(256,
-        #              rate=0.65,
-        #              ),
         LinearLayer(50,
                     activation=relu(),
                     prev_weights_initializer=he_initializer(),
@@ -78,10 +75,7 @@ model.build(loss_function=mse(),
 model.fit(model_data_source=data_source,
           epochs=10)
 
-# model.save_to_file("test_save_model_lr0.002.txt")
-#
-#
 # pr.disable()
 # stats = pstats.Stats(pr)
 # stats.sort_stats(pstats.SortKey.TIME)
-# stats.dump_stats("profile_nn_10_epochs.prof")
+# stats.dump_stats("profiler_files/profile_nn_10_epochs.prof")
