@@ -93,7 +93,7 @@ def scaling_pil(scale_range: (float, float) = (0.5, 1.5),
 
     return DataAugmentation(augmentate_function,name="scaling_pil")
 
-def scaling_scipy(scale_range: (float, float) = (0.8, 1.2),
+def scaling_scipy(scale_range: (float, float) = (0.5, 1.5),
             copies: int = 2,
             padding_value: float = 0.):
 
