@@ -8,7 +8,7 @@ from v1.src.base.data import data_augmentation
 from v1.src.base.data.model_data_source import ModelDataSource
 from v1.src.base.layers.input_layer import InputLayer
 from v1.src.base.layers.linear_layer import *
-from v1.src.base.metrics.accuracy_metric import one_hot_matches_metric
+from v1.src.base.metrics import AccuracyMetric, one_hot_matching_function
 from v1.src.base.models.custom_sequential_model import *
 from v1.src.base.optimizers.adam import Adam
 from v1.src.base.value_initializer import he_initializer
@@ -64,72 +64,16 @@ model = CustomSequentialModel(
 
 model.init_layers_params()
 
-######################################
-
-print(f"learning_rate: {0.0015}")
+print(f"learning_rate: {0.0013}")
 
 model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0015),
-            metric=one_hot_matches_metric())
+            optimizer=Adam(learning_rate=0.0013),
+            metric=AccuracyMetric(matching_function=one_hot_matching_function()))
 
 model.fit(model_data_source=data_source,
           epochs=10)
 
-model.save_to_file("model_Adam_lr0.0015.txt")
-
-######################################
-
-print(f"learning_rate: {0.0017}")
-
-model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0017),
-            metric=one_hot_matches_metric())
-
-model.fit(model_data_source=data_source,
-          epochs=10)
-
-model.save_to_file("model_Adam_lr0.0017.txt")
-
-######################################
-
-print(f"learning_rate: {0.0019}")
-
-model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0019),
-            metric=one_hot_matches_metric())
-
-model.fit(model_data_source=data_source,
-          epochs=10)
-
-model.save_to_file("model_Adam_lr0.0019.txt")
-
-######################################
-
-print(f"learning_rate: {0.0021}")
-
-model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0021),
-            metric=one_hot_matches_metric())
-
-model.fit(model_data_source=data_source,
-          epochs=10)
-
-model.save_to_file("model_Adam_lr0.0021.txt")
-
-######################################
-
-print(f"learning_rate: {0.0023}")
-
-model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0023),
-            metric=one_hot_matches_metric())
-
-model.fit(model_data_source=data_source,
-          epochs=10)
-
-model.save_to_file("model_Adam_lr0.0023.txt")
-
-######################################
+model.save_to_file("model_Adam_lr0.0013.txt")
 
 # pr.disable()
 # stats = pstats.Stats(pr)
