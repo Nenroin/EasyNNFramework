@@ -1,9 +1,11 @@
 from abc import ABC
+from time import sleep
 
 import numpy as np
 
+from v1.src.base.callbacks import Callback
 from v1.src.base.callbacks.callback_list import CallbackList
-from v1.src.base.data import ModelDataSource
+from v1.src.base.data import ModelDataSource, DataBatchWrapper
 from v1.src.base.layers.layer import Layer
 from v1.src.base.loss_function import LossFunction
 from v1.src.base.metrics.metric import Metric
@@ -31,12 +33,96 @@ class SequentialModel(Model, ABC):
     def fit(self,
             model_data_source: ModelDataSource,
             epochs: int = 1,
-            callbacks: CallbackList = None):
+            callbacks: CallbackList or [Callback] = None,
+            ):
+
         train_data = model_data_source.train_data_batches()
         test_data = model_data_source.test_data_batches()
+
+        if not isinstance(callbacks, CallbackList):
+            callbacks = CallbackList(
+                model=self,
+                callbacks=callbacks,
+                epochs=epochs,
+                test_iterations=len(test_data),
+                train_iterations=len(train_data),
+            )
+
+        callbacks.on_fit_start(epochs)
         for epoch in range(epochs):
-            self.train_epoch(train_data)
-            self.test_epoch(test_data)
+            callbacks.on_epoch_start(epoch)
+
+            callbacks.on_train_epoch_start(epoch)
+            self.train_epoch(train_data, callbacks=callbacks)
+            callbacks.on_train_epoch_end(epoch, self.metric.get_metric_state())
+
+            callbacks.on_test_epoch_start(epoch)
+            self.test_epoch(test_data, callbacks=callbacks)
+            callbacks.on_test_epoch_end(epoch, self.metric.get_metric_state())
+
+            callbacks.on_epoch_end(epoch)
+        callbacks.on_fit_end()
+
+    def train_epoch(
+            self,
+            train_data: DataBatchWrapper,
+            callbacks: CallbackList or [Callback] = None
+    ):
+        if len(train_data) == 0:
+            return
+
+        if not isinstance(callbacks, CallbackList):
+            callbacks = CallbackList(
+                model=self,
+                callbacks=callbacks,
+                train_iterations=len(train_data),
+            )
+
+        self.metric.clear_state()
+        for i, (x_batch, e_batch) in enumerate(train_data):
+            self.optimizer.zero_grad()
+
+            callbacks.on_train_batch_start(i)
+
+            y_pred_batch = self.forward(x_batch)
+
+            loss_gradient_batch = np.array([
+                self.loss_function.gradient(y_pred=y_pred, e=e)
+                for y_pred, e in zip(y_pred_batch, e_batch)
+            ])
+
+            self.backward(loss_gradient_batch=loss_gradient_batch)
+
+            [self.metric.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
+
+            callbacks.on_train_batch_end(i, self.metric.get_metric_state())
+
+            self.optimizer.next_step()
+
+
+    def test_epoch(
+            self,
+            test_data: DataBatchWrapper,
+            callbacks: CallbackList or [Callback] = None
+    ):
+        if len(test_data) == 0:
+            return
+
+        if not isinstance(callbacks, CallbackList):
+            callbacks = CallbackList(
+                model=self,
+                callbacks=callbacks,
+                test_iterations=len(test_data),
+            )
+
+        self.metric.clear_state()
+        for i, (x_batch, e_batch) in enumerate(test_data):
+            callbacks.on_test_batch_start(i)
+
+            y_batch = self.forward(x_batch)
+            [self.metric.update_state(y, e) for y, e in zip(y_batch, e_batch)]
+
+            callbacks.on_test_batch_end(i, self.metric.get_metric_state())
 
     def forward(self, in_batch: np.ndarray, training=True) -> np.ndarray:
         if in_batch.ndim == 1:

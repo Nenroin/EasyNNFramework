@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
+from v1.src.base.callbacks import Callback
 from v1.src.base.callbacks.callback_list import CallbackList
 from v1.src.base.data.data_batch_wrapper import DataBatchWrapper
 from v1.src.base.data.model_data_source import ModelDataSource
@@ -38,15 +39,15 @@ class Model(ABC):
         self.metric = metric or self.metric
 
     @abstractmethod
-    def fit(self, model_data_source: ModelDataSource, epochs = 1, callbacks: CallbackList = None):
+    def fit(self, model_data_source: ModelDataSource, epochs = 1, callbacks: CallbackList or [Callback] = None):
         pass
 
     @abstractmethod
-    def train_epoch(self, train_data: DataBatchWrapper, callbacks: CallbackList = None):
+    def train_epoch(self, train_data: DataBatchWrapper, callbacks: CallbackList or [Callback] = None):
         pass
 
     @abstractmethod
-    def test_epoch(self, test_data: DataBatchWrapper, callbacks: CallbackList = None):
+    def test_epoch(self, test_data: DataBatchWrapper, callbacks: CallbackList or [Callback] = None):
         pass
 
     @abstractmethod
