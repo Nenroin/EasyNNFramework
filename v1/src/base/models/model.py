@@ -29,6 +29,8 @@ class Model(ABC):
 
         self.layers = layers or []
 
+        self.stop_training = False
+
     def build(
             self,
             loss_function: LossFunction = None,

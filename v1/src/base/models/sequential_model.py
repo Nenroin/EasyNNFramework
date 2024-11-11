@@ -56,6 +56,10 @@ class SequentialModel(Model, ABC):
             self.train_epoch(train_data, callbacks=callbacks)
             callbacks.on_train_epoch_end(epoch, self.metric.get_metric_state())
 
+            # stop if stop_training flag was set in on_train_epoch_end callbacks
+            if self.stop_training:
+                break
+
             callbacks.on_test_epoch_start(epoch)
             self.test_epoch(test_data, callbacks=callbacks)
             callbacks.on_test_epoch_end(epoch, self.metric.get_metric_state())
@@ -95,9 +99,14 @@ class SequentialModel(Model, ABC):
 
             [self.metric.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
 
+            self.optimizer.next_step()
+
             callbacks.on_train_batch_end(i, self.metric.get_metric_state())
 
-            self.optimizer.next_step()
+            # stop if stop_training flag was set in on_train_batch_end callbacks
+            if self.stop_training:
+                break
+
 
 
     def test_epoch(
