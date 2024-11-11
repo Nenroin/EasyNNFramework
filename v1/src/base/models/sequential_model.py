@@ -9,6 +9,7 @@ from v1.src.base.data import ModelDataSource, DataBatchWrapper
 from v1.src.base.layers.layer import Layer
 from v1.src.base.loss_function import LossFunction
 from v1.src.base.metrics.metric import Metric
+from v1.src.base.metrics.metric_list import MetricList
 from v1.src.base.models.model import Model
 from v1.src.base.optimizers.optimizer import Optimizer
 from v1.src.utils.sequential_model_summary_util import print_model_summary
@@ -19,14 +20,14 @@ class SequentialModel(Model, ABC):
                  layers: [Layer] = None,
                  optimizer: Optimizer = None,
                  loss_function: LossFunction = None,
-                 metric: Metric = None,
+                 metrics: [Metric] or MetricList = None,
                  name: str = 'SequentialModel',
                  ):
         super().__init__(
             layers=layers,
             optimizer=optimizer,
             loss_function=loss_function,
-            metric=metric,
+            metrics=metrics,
             name=name,
         )
 
@@ -44,8 +45,9 @@ class SequentialModel(Model, ABC):
                 model=self,
                 callbacks=callbacks,
                 epochs=epochs,
-                test_iterations=len(test_data),
-                train_iterations=len(train_data),
+                test_batches=len(test_data),
+                train_batches=len(train_data),
+                batch_size=model_data_source.batch_size,
             )
 
         callbacks.on_fit_start(epochs)
@@ -54,7 +56,7 @@ class SequentialModel(Model, ABC):
 
             callbacks.on_train_epoch_start(epoch)
             self.train_epoch(train_data, callbacks=callbacks)
-            callbacks.on_train_epoch_end(epoch, self.metric.get_metric_state())
+            callbacks.on_train_epoch_end(epoch, self.metrics.get_metric_state())
 
             # stop if stop_training flag was set in on_train_epoch_end callbacks
             if self.stop_training:
@@ -62,7 +64,7 @@ class SequentialModel(Model, ABC):
 
             callbacks.on_test_epoch_start(epoch)
             self.test_epoch(test_data, callbacks=callbacks)
-            callbacks.on_test_epoch_end(epoch, self.metric.get_metric_state())
+            callbacks.on_test_epoch_end(epoch, self.metrics.get_metric_state())
 
             callbacks.on_epoch_end(epoch)
         callbacks.on_fit_end()
@@ -79,10 +81,11 @@ class SequentialModel(Model, ABC):
             callbacks = CallbackList(
                 model=self,
                 callbacks=callbacks,
-                train_iterations=len(train_data),
+                train_batches=len(train_data),
+                batch_size=train_data.batch_size,
             )
 
-        self.metric.clear_state()
+        self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(train_data):
             self.optimizer.zero_grad()
 
@@ -97,11 +100,11 @@ class SequentialModel(Model, ABC):
 
             self.backward(loss_gradient_batch=loss_gradient_batch)
 
-            [self.metric.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
+            [self.metrics.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
 
             self.optimizer.next_step()
 
-            callbacks.on_train_batch_end(i, self.metric.get_metric_state())
+            callbacks.on_train_batch_end(i, self.metrics.get_metric_state())
 
             # stop if stop_training flag was set in on_train_batch_end callbacks
             if self.stop_training:
@@ -121,17 +124,18 @@ class SequentialModel(Model, ABC):
             callbacks = CallbackList(
                 model=self,
                 callbacks=callbacks,
-                test_iterations=len(test_data),
+                test_batches=len(test_data),
+                batch_size=test_data.batch_size,
             )
 
-        self.metric.clear_state()
+        self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(test_data):
             callbacks.on_test_batch_start(i)
 
             y_batch = self.forward(x_batch)
-            [self.metric.update_state(y, e) for y, e in zip(y_batch, e_batch)]
+            [self.metrics.update_state(y, e) for y, e in zip(y_batch, e_batch)]
 
-            callbacks.on_test_batch_end(i, self.metric.get_metric_state())
+            callbacks.on_test_batch_end(i, self.metrics.get_metric_state())
 
     def forward(self, in_batch: np.ndarray, training=True) -> np.ndarray:
         if in_batch.ndim == 1:

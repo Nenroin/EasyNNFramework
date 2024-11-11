@@ -9,7 +9,7 @@ from v1.src.base.data.data_batch_wrapper import DataBatchWrapper
 from v1.src.base.data.model_data_source import ModelDataSource
 from v1.src.base.layers.layer import Layer
 from v1.src.base.loss_function import LossFunction, mse
-from v1.src.base.metrics import LossMetric
+from v1.src.base.metrics import LossMetric, MetricList
 from v1.src.base.metrics.metric import Metric
 from v1.src.base.models.sequential_model import SequentialModel
 from v1.src.base.optimizers.optimizer import Optimizer
@@ -21,13 +21,13 @@ class CustomSequentialModel(SequentialModel):
                  layers: [Layer] = None,
                  optimizer: Optimizer = SGD(),
                  loss_function: LossFunction = mse(),
-                 metric: Metric = LossMetric(loss_function=mse()),
+                 metrics: [Metric] or MetricList = None,
                  ):
         super().__init__(
             layers=layers,
             optimizer=optimizer,
             loss_function=loss_function,
-            metric=metric,
+            metrics=metrics,
             name=type(self).__name__
         )
 
@@ -52,7 +52,7 @@ class CustomSequentialModel(SequentialModel):
         if len(train_data) == 0:
             return
 
-        self.metric.clear_state()
+        self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(pbar := tqdm(train_data,
                                                     total=len(train_data),
                                                     desc="train",
@@ -68,9 +68,9 @@ class CustomSequentialModel(SequentialModel):
 
             self.backward(loss_gradient_batch=loss_gradient_batch)
 
-            [self.metric.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
+            [self.metrics.update_state(y, e) for y, e in zip(y_pred_batch, e_batch)]
 
-            pbar.set_postfix_str(self.metric.get_metric_value(), refresh=True)
+            pbar.set_postfix_str(self.metrics.get_metric_value()[0], refresh=True)
 
             self.optimizer.next_step()
 
@@ -82,12 +82,12 @@ class CustomSequentialModel(SequentialModel):
         if len(test_data) == 0:
             return
 
-        self.metric.clear_state()
+        self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(pbar := tqdm(test_data,
                                                     total=len(test_data),
                                                     desc="test",
                                                     disable=disable_tqdm)):
             y_batch = self.forward(x_batch)
-            [self.metric.update_state(y, e) for y, e in zip(y_batch, e_batch)]
+            [self.metrics.update_state(y, e) for y, e in zip(y_batch, e_batch)]
 
-            pbar.set_postfix_str(self.metric.get_metric_value(), refresh=True)
+            pbar.set_postfix_str(self.metrics.get_metric_value()[0], refresh=True)

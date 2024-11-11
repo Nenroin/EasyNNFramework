@@ -9,6 +9,7 @@ from v1.src.base.data.data_batch_wrapper import DataBatchWrapper
 from v1.src.base.data.model_data_source import ModelDataSource
 from v1.src.base.layers.layer import Layer
 from v1.src.base.loss_function import LossFunction
+from v1.src.base.metrics import MetricList
 from v1.src.base.metrics.metric import Metric
 from v1.src.base.optimizers.optimizer import Optimizer
 
@@ -19,13 +20,15 @@ class Model(ABC):
                  layers: [Layer] = None,
                  loss_function: LossFunction = None,
                  optimizer: Optimizer = None,
-                 metric: Metric = None,
+                 metrics: [Metric] or MetricList = None,
                  ):
         self.name = name
 
         self.optimizer = optimizer
         self.loss_function = loss_function
-        self.metric = metric
+
+        if not isinstance(metrics, MetricList):
+            self.metrics = MetricList(metrics)
 
         self.layers = layers or []
 
@@ -35,10 +38,12 @@ class Model(ABC):
             self,
             loss_function: LossFunction = None,
             optimizer: Optimizer = None,
-            metric: Metric = None):
+            metrics: [Metric] or MetricList = None,
+    ):
         self.loss_function = loss_function or self.loss_function
         self.optimizer = optimizer or self.optimizer
-        self.metric = metric or self.metric
+        if metrics is not None and not isinstance(metrics, MetricList):
+            self.metrics = MetricList(metrics)
 
     @abstractmethod
     def fit(self, model_data_source: ModelDataSource, epochs = 1, callbacks: CallbackList or [Callback] = None):
@@ -77,7 +82,9 @@ class Model(ABC):
             'name': self.name,
             'optimizer': self.optimizer,
             'loss_function': self.loss_function,
-            'metric': self.metric,
+            'metrics': [
+                metric for metric in self.metrics
+            ],
             'layers': [
                 layer for layer in self.layers
             ],
@@ -88,7 +95,7 @@ class Model(ABC):
         self.name = state['name']
         self.optimizer = state['optimizer']
         self.loss_function = state['loss_function']
-        self.metric = state['metric']
+        self.metrics = state['metrics']
         self.layers = state['layers']
 
     def save_to_file(self, file):

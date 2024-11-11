@@ -1,10 +1,10 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 
 
-class Metric:
+class Metric(ABC):
     def __init__(
             self,
-            name: str,
+            name: str = None,
     ):
         self.name = name
 
