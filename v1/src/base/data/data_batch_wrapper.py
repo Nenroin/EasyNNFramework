@@ -28,3 +28,10 @@ class DataBatchWrapper:
                  self.data_y[self.index : self.index + self.batch_size])
         self.index += self.batch_size
         return batch
+
+    def __getitem__(self, idx):
+        idx *= self.batch_size
+        batch = (self.data_x[idx: self.index + self.batch_size],
+                 self.data_y[idx: self.index + self.batch_size])
+
+        return batch
