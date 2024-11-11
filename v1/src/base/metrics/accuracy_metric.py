@@ -6,6 +6,7 @@ class AccuracyMetric(Metric):
     def __init__(
             self,
             matching_function: MatchingFunction = None,
+            published_name: str = "accuracy",
     ):
         super().__init__(
             name=type(self).__name__
@@ -18,11 +19,15 @@ class AccuracyMetric(Metric):
         self.last_iterations = 0
         self.last_guessed_counter = 0.
 
+        self.published_name = published_name
+
     @property
     def accuracy(self):
+        if self.iterations == 0:
+            return 'Nan'
         return self.guessed_counter / self.iterations * 100
 
-    def reset_state(self):
+    def clear_state(self):
         self.last_iterations = self.iterations
         self.last_guessed_counter = self.guessed_counter
 
@@ -33,10 +38,16 @@ class AccuracyMetric(Metric):
         self.iterations += 1
         self.guessed_counter += (self.__matching_function(y_pred, e))
 
-    def print_result(self):
-        print(f"iterations: {self.iterations}, guessed_counter: {self.guessed_counter}")
-        print(f"accuracy: {self.accuracy}")
+    def get_metric_state(self):
+        result = {
+            'name': AccuracyMetric.__name__,
+            'matching_function': self.__matching_function.name,
+            'iterations': self.iterations,
+            'guessed_counter': self.guessed_counter,
+            'accuracy': self.accuracy,
+            self.published_name: self.accuracy,
+        }
+        return result
 
-
-def one_hot_matches_metric():
-    return AccuracyMetric(matching_function=one_hot_matching_function())
+    def get_metric_value(self):
+        return f'{self.published_name}: {self.accuracy}'

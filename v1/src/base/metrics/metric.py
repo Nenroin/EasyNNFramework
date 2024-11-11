@@ -13,9 +13,13 @@ class Metric:
         pass
 
     @abstractmethod
-    def reset_state(self):
+    def clear_state(self):
         pass
 
     @abstractmethod
-    def print_result(self):
+    def get_metric_state(self):
+        pass
+
+    @abstractmethod
+    def get_metric_value(self):
         pass
