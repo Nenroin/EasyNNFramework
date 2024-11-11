@@ -5,9 +5,12 @@ import numpy as np
 
 
 class Optimizer(
+    # Use to serialize subclasses functions, now not need use
+
+    # Example
     # metaclass=SerializeMetaClass,
     # id_field='name',
-    # serialized_fields = ['learning_rate'],
+    # saved_fields = ['ser_fn'],
 ):
     def __init__(
             self,

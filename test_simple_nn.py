@@ -6,7 +6,7 @@ from v1.src.base.layers.dropout_layer import DropoutLayer
 from v1.src.base.layers.input_layer import InputLayer
 from v1.src.base.layers.linear_layer import LinearLayer
 from v1.src.base.loss_function import mse
-from v1.src.base.metrics.loss_metric import average_mse_loss_metric
+from v1.src.base.metrics import LossMetric
 from v1.src.base.optimizers.sgd import SGD
 from v1.src.base.models.custom_sequential_model import CustomSequentialModel
 
@@ -57,6 +57,6 @@ model.init_layers_params()
 
 model.build(loss_function=mse(),
             optimizer=SGD(learning_rate=0.2, nesterov=True),
-            metric=average_mse_loss_metric())
+            metric=LossMetric(loss_function=mse()))
 
 model.fit(model_data_source=data_source, epochs=10, disable_tqdm=True)

@@ -2,7 +2,7 @@ from typing import Callable
 
 import numpy as np
 
-from v1.src.serialize.serialize_meta_class import SerializeMetaClass
+from v1.src.serialize import SerializeMetaClass
 
 
 class Activation(

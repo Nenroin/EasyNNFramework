@@ -1,5 +1,3 @@
-from abc import ABC
-
 from v1.src.serialize.serialize_storage import SerializeStorage
 
 class SerializeMetaClass(
