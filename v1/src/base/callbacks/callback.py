@@ -8,6 +8,18 @@ class Callback:
         self.model = None
         self.state = None
 
+    # default state keys:
+    # in fit
+    #     epochs,
+    #     test_batches,
+    #     train_batches,
+    #     batch_size,
+    # in train_epoch
+    #     train_batches,
+    #     batch_size,
+    # in test_epoch
+    #     test_batches,
+    #     batch_size,
     def set_state(self, state):
         self.state = state
 
@@ -35,7 +47,7 @@ class Callback:
         pass
 
     @not_overridden
-    def on_train_epoch_end(self, epoch, metric_state, state_dict=None):
+    def on_train_epoch_end(self, epoch, metric_states: [{}], state_dict=None):
         pass
 
     @not_overridden
@@ -43,7 +55,7 @@ class Callback:
         pass
 
     @not_overridden
-    def on_test_epoch_end(self, epoch, metric_state, state_dict=None):
+    def on_test_epoch_end(self, epoch, metric_states: [{}], state_dict=None):
         pass
     
     @not_overridden
@@ -51,7 +63,7 @@ class Callback:
         pass
 
     @not_overridden
-    def on_train_batch_end(self, batch, metric_state, state_dict=None):
+    def on_train_batch_end(self, batch, metric_states: [{}], state_dict=None):
         pass
 
     @not_overridden
@@ -59,6 +71,6 @@ class Callback:
         pass
 
     @not_overridden
-    def on_test_batch_end(self, batch, metric_state, state_dict=None):
+    def on_test_batch_end(self, batch, metric_states: [{}], state_dict=None):
         pass
 

@@ -24,11 +24,10 @@ class MetricList(Metric):
 
     def get_metric_state(self):
         if self.metrics:
-            state = []
+            states = []
             for metric in self.metrics:
-                state.append(metric.get_metric_state())
-            return state
-
+                states.append(metric.get_metric_state())
+            return states
 
     def get_metric_value(self):
         if self.metrics:

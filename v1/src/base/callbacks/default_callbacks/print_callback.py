@@ -20,23 +20,23 @@ class PrintCallback(Callback):
     def on_train_epoch_start(self, epoch, state_dict=None):
         print(f"on_train_epoch_start, epoch:{epoch}")
 
-    def on_train_epoch_end(self, epoch, metric_state, state_dict=None):
-        print(f"on_train_epoch_end, epoch:{epoch}, metric_state:{metric_state}")
+    def on_train_epoch_end(self, epoch, metric_states, state_dict=None):
+        print(f"on_train_epoch_end, epoch:{epoch}, metric_states:{metric_states}")
 
     def on_test_epoch_start(self, epoch, state_dict=None):
         print(f"on_test_epoch_start, epoch:{epoch}")
 
-    def on_test_epoch_end(self, epoch, metric_state, state_dict=None):
-        print(f"on_test_epoch_end, epoch:{epoch}, metric_state:{metric_state}")
+    def on_test_epoch_end(self, epoch, metric_states, state_dict=None):
+        print(f"on_test_epoch_end, epoch:{epoch}, metric_states:{metric_states}")
 
     def on_train_batch_start(self, batch_idx, state_dict=None):
         print(f"on_train_batch_start, batch_idx:{batch_idx}")
 
-    def on_train_batch_end(self, batch_idx, metric_state, state_dict=None):
-        print(f"on_train_batch_end, batch_idx:{batch_idx}, metric_state:{metric_state}")
+    def on_train_batch_end(self, batch_idx, metric_states, state_dict=None):
+        print(f"on_train_batch_end, batch_idx:{batch_idx}, metric_states:{metric_states}")
 
     def on_test_batch_start(self, batch_idx, state_dict=None):
         print(f"on_test_batch_start, batch_idx:{batch_idx}")
 
-    def on_test_batch_end(self, batch_idx, metric_state, state_dict=None):
-        print(f"on_test_batch_end, batch_idx:{batch_idx}, metric_state:{metric_state}")
+    def on_test_batch_end(self, batch_idx, metric_states, state_dict=None):
+        print(f"on_test_batch_end, batch_idx:{batch_idx}, metric_states:{metric_states}")

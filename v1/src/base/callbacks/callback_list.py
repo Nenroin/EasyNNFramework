@@ -10,9 +10,9 @@ class CallbackList(Callback):
             **kwargs,
     ):
         super().__init__()
+        self.__callbacks = callbacks or []
         self.set_model(model)
         self.set_state(kwargs)
-        self.__callbacks = callbacks or []
 
     def set_model(self, model):
         self.model = model
@@ -44,31 +44,31 @@ class CallbackList(Callback):
         [callback.on_train_epoch_start(epoch, state_dict)
          for callback in self.__callbacks]
 
-    def on_train_epoch_end(self, epoch, metric_state, state_dict=None):
-        [callback.on_train_epoch_end(epoch, metric_state, state_dict)
+    def on_train_epoch_end(self, epoch, metric_states, state_dict=None):
+        [callback.on_train_epoch_end(epoch, metric_states, state_dict)
          for callback in self.__callbacks]
 
     def on_test_epoch_start(self, epoch, state_dict=None):
         [callback.on_test_epoch_start(epoch, state_dict)
          for callback in self.__callbacks]
 
-    def on_test_epoch_end(self, epoch, metric_state, state_dict=None):
-        [callback.on_test_epoch_end(epoch, metric_state, state_dict)
+    def on_test_epoch_end(self, epoch, metric_states, state_dict=None):
+        [callback.on_test_epoch_end(epoch, metric_states, state_dict)
          for callback in self.__callbacks]
 
     def on_train_batch_start(self, batch_idx, state_dict=None):
         [callback.on_train_batch_start(batch_idx, state_dict)
          for callback in self.__callbacks]
 
-    def on_train_batch_end(self, batch_idx, metric_state, state_dict=None):
-        [callback.on_train_batch_end(batch_idx, metric_state, state_dict)
+    def on_train_batch_end(self, batch_idx, metric_states, state_dict=None):
+        [callback.on_train_batch_end(batch_idx, metric_states, state_dict)
          for callback in self.__callbacks]
 
     def on_test_batch_start(self, batch_idx, state_dict=None):
         [callback.on_test_batch_start(batch_idx, state_dict)
          for callback in self.__callbacks]
 
-    def on_test_batch_end(self, batch_idx, metric_state, state_dict=None):
-        [callback.on_test_batch_end(batch_idx, metric_state, state_dict)
+    def on_test_batch_end(self, batch_idx, metric_states, state_dict=None):
+        [callback.on_test_batch_end(batch_idx, metric_states, state_dict)
          for callback in self.__callbacks]
 
