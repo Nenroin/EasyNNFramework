@@ -82,9 +82,7 @@ class Model(ABC):
             'name': self.name,
             'optimizer': self.optimizer,
             'loss_function': self.loss_function,
-            'metrics': [
-                metric for metric in self.metrics
-            ],
+            'metrics': self.metrics,
             'layers': [
                 layer for layer in self.layers
             ],
