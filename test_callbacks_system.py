@@ -1,51 +1,52 @@
-from v1.src.base.activation import linear
-from v1.src.base.callbacks.default_callbacks.print_callback import PrintCallback
-from v1.src.base.data import ModelDataSource
-from v1.src.base.layers import InputLayer, LinearLayer
-from v1.src.base.loss_function import mse
-from v1.src.base.metrics import LossMetric
-from v1.src.base.models import SequentialModel
-from v1.src.base.optimizers import SGD
+from v1.src.base.activation import *
+from v1.src.base.data import data_augmentation
+from v1.src.base.layers.linear_layer import *
+from v1.src.base.metrics import AccuracyMetric
+from v1.src.base.metrics.matching_functon import one_hot_matching_function
+from v1.src.base.models.custom_sequential_model import *
+from v1.src.base.optimizers.adam import Adam
+from v1.src.base.value_initializer import he_initializer
+from v1.src.mnist.mnist_dataloader import MnistDataloader
 
-x_train = x_test = [
-    [1,2,3,4],
-    [2,3,4,5],
-    [3,4,5,6],
-    [4,5,6,7]
-]
+mnist_dataloader = MnistDataloader()
+(x_train, y_train), (x_test, y_test) = mnist_dataloader.load_data()
 
-y_train = y_test = [
-    [1],
-    [2],
-    [3],
-    [4]
-]
+
+batch_size = 200
 
 data_source = ModelDataSource(
     train_data=(x_train, y_train),
     test_data=(x_test, y_test),
-    shuffle=False,
-    batch_size=1,
+    data_augmentations=[
+        data_augmentation.flatten(),
+        data_augmentation.normalize(),
+        data_augmentation.one_hot_labels(num_classes=10)
+    ],
+    batch_size=batch_size,
 )
 
-model = SequentialModel(layers=[
-    InputLayer(4),
-    LinearLayer(1,
-                activation=linear(),
-                use_bias=True,
-                ),
-])
+model = SequentialModel(
+    layers=[
+        InputLayer(784),
+        LinearLayer(256,
+                    activation=relu(),
+                    prev_weights_initializer=he_initializer(),
+                    ),
+        LinearLayer(10,
+                    activation=softmax(),
+                    prev_weights_initializer=he_initializer(),
+                    ),
+    ]
+)
 
 model.init_layers_params()
 
 model.build(loss_function=mse(),
-            optimizer=SGD(learning_rate=0.2, nesterov=True),
-            metric=LossMetric(loss_function=mse()))
+            optimizer=Adam(learning_rate=0.0011),
+            metrics=[
+                AccuracyMetric(matching_function=one_hot_matching_function())
+            ],
+            )
 
-model.fit(
-    model_data_source=data_source,
-    epochs=10,
-    callbacks=[
-        PrintCallback(),
-    ],
-)
+model.fit(model_data_source=data_source,
+          epochs=10)

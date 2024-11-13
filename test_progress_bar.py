@@ -16,5 +16,5 @@ progress_bar = ProgressBar(
 )
 
 for i in [1,2,3,4,5,6,7,8,9,10]:
-    sleep(3.15)
+    sleep(1.15)
     progress_bar.update(1)
