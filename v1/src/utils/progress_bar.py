@@ -2,9 +2,6 @@ import sys
 import time
 from typing import TextIO
 
-from tqdm import tqdm
-
-
 class ProgressBar:
     def __init__(
             self,
@@ -32,17 +29,22 @@ class ProgressBar:
         self.iteration = initial
 
         self.start_time = time.time()
+        self.last_iteration_change_time = None
         self.last_print_time = None
 
     def update(self, increase=1):
+        if not isinstance(increase, int) or increase <= 0:
+            raise ValueError('Increase must be an integer greater than 0.')
         self.iteration += increase
+        self.last_iteration_change_time = time.time()
+        self.refresh()
+
+    def refresh(self):
         bar = self.__get_progress_bar()
         time_section = self.__get_time_section()
         iterations_section = self.__get_iterations_section()
-        self.display(f'{self.prefix} |{bar}| {iterations_section} {time_section} {self.suffix}')
-
-    def refresh(self):
-        self.update(increase=0)
+        completion_percentage = self.__get_completion_percentage()
+        self.display(f'{self.prefix} {completion_percentage} |{bar}| {iterations_section} {time_section} {self.suffix}')
 
     def display(self, msg=None):
         self.last_print_time = self.start_time
@@ -64,10 +66,11 @@ class ProgressBar:
 
     def __get_iterations_section(self):
         total_digits_number = len(str(self.total))
-        return f'{self.iteration:0{total_digits_number}}{self.unit}/{self.total}{self.unit}'
+        return f'{self.iteration: {total_digits_number}}{self.unit}/{self.total}{self.unit}'
 
     def __get_completion_percentage(self):
-        return f'{self.iteration // self.total:.03}%'
+        percentage = int(self.iteration / self.total * 100)
+        return f'{percentage: 3}%'
 
     @classmethod
     def __format_time(cls, seconds):
@@ -92,7 +95,7 @@ class ProgressBar:
         return remaining_time
 
     def __get_passed_time(self):
-        return time.time() - self.start_time
+        return self.last_iteration_change_time - self.start_time
 
     def __get_average_iteration_duration(self):
         return self.__get_passed_time() / (self.iteration - self.initial)
