@@ -6,7 +6,7 @@ class ProgressBar:
     def __init__(
             self,
             total: int = None,
-            pb_length: int = 50,
+            pb_length: int = 20,
             # one or two chars
             # if fill='-' : |-------   |
             # if fill='->': |------>   |
@@ -14,7 +14,6 @@ class ProgressBar:
             unfilled: chr = ' ',
             out_stream: TextIO = None,
             prefix: str = '',
-            suffix: str = '',
             postfix: str = '',
             unit: str = 'it',
             initial: int = 0,
@@ -26,11 +25,10 @@ class ProgressBar:
 
         self.fill_start = str(fill)[0]
         self.fill_end = str(fill)[-1]
-        self.unfilled = unfilled
+        self.unfilled = str(unfilled)[0]
 
         self.prefix = prefix
         self.postfix = postfix
-        self.suffix = suffix
         self.unit = unit
         self.out_stream = out_stream
 
@@ -54,7 +52,7 @@ class ProgressBar:
         time_section = self.__get_time_section()
         iterations_section = self.__get_iterations_section()
         completion_percentage = self.__get_completion_percentage()
-        self.display(f'{self.prefix} {completion_percentage} |{bar}| {iterations_section} {time_section} {self.postfix}')
+        self.display(f'{self.prefix}{completion_percentage} |{bar}| {iterations_section} {time_section} {self.postfix}')
 
     def display(self, msg=None):
         self.last_print_time = self.start_time
@@ -71,10 +69,15 @@ class ProgressBar:
         if refresh:
             self.refresh()
 
-    def set_postfix_obj(self, obj, refresh=False):
-        self.postfix = ', '.join(f"{key}: {value}" for key, value in obj.items())
+    def set_postfix_dict(self, data, refresh=False):
+        self.postfix = ', '.join(f"{key}: {value}" for key, value in data.items())
         if refresh:
             self.refresh()
+
+    def close(self, leave=True):
+        print_chr = '\n' if leave else '\r'
+        self.out_stream.write(f'{print_chr}')
+        self.out_stream.flush()
 
     def __get_progress_bar(self):
         iteration = min(self.iteration, self.total)
@@ -89,9 +92,8 @@ class ProgressBar:
         displayed_time_to_finish = self.__format_time(self.__get_time_to_finish())
         displayed_passed_time = self.__format_time(self.__get_passed_time())
 
-        average_iteration_duration = self.__get_average_iteration_duration()
-        displayed_duration = self.__format_time(average_iteration_duration)
-        return f'[{displayed_passed_time} < {displayed_time_to_finish}, {displayed_duration}/{self.unit}]'
+        iterations_per_second = 1 / self.__get_average_iteration_duration()
+        return f'[{displayed_passed_time} < {displayed_time_to_finish}, {iterations_per_second:.3f}{self.unit}/s]'
 
     def __get_iterations_section(self):
         total_digits_number = len(str(self.total))
