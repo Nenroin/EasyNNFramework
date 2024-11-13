@@ -7,10 +7,15 @@ class ProgressBar:
             self,
             total: int = None,
             pb_length: int = 50,
-            fill: chr = '█',
+            # one or two chars
+            # if fill='-' : |-------   |
+            # if fill='->': |------>   |
+            fill: chr or str = '->',
+            unfilled: chr = ' ',
             out_stream: TextIO = None,
             prefix: str = '',
             suffix: str = '',
+            postfix: str = '',
             unit: str = 'it',
             initial: int = 0,
     ):
@@ -18,14 +23,19 @@ class ProgressBar:
             out_stream = sys.stderr
 
         self.pb_length = pb_length
-        self.fill = fill
+
+        self.fill_start = str(fill)[0]
+        self.fill_end = str(fill)[-1]
+        self.unfilled = unfilled
+
         self.prefix = prefix
+        self.postfix = postfix
         self.suffix = suffix
         self.unit = unit
-        self.total = total
         self.out_stream = out_stream
-        self.initial = initial
 
+        self.total = total
+        self.initial = initial
         self.iteration = initial
 
         self.start_time = time.time()
@@ -44,33 +54,52 @@ class ProgressBar:
         time_section = self.__get_time_section()
         iterations_section = self.__get_iterations_section()
         completion_percentage = self.__get_completion_percentage()
-        self.display(f'{self.prefix} {completion_percentage} |{bar}| {iterations_section} {time_section} {self.suffix}')
+        self.display(f'{self.prefix} {completion_percentage} |{bar}| {iterations_section} {time_section} {self.postfix}')
 
     def display(self, msg=None):
         self.last_print_time = self.start_time
         self.out_stream.write(f'\r{msg}')
         self.out_stream.flush()
 
+    def set_prefix(self, prefix, refresh=False):
+        self.prefix = prefix
+        if refresh:
+            self.refresh()
+
+    def set_postfix(self, postfix, refresh=False):
+        self.postfix = postfix
+        if refresh:
+            self.refresh()
+
+    def set_postfix_obj(self, obj, refresh=False):
+        self.postfix = ', '.join(f"{key}: {value}" for key, value in obj.items())
+        if refresh:
+            self.refresh()
+
     def __get_progress_bar(self):
         iteration = min(self.iteration, self.total)
         filled_length = int(self.pb_length * iteration // self.total)
-        bar = self.fill * filled_length + '-' * (self.pb_length - filled_length)
+        bar = ''
+        if filled_length != 0:
+            bar = self.fill_start * (filled_length - 1) + self.fill_end
+        bar += self.unfilled * (self.pb_length - filled_length)
         return bar
 
     def __get_time_section(self):
-        time_to_finish = self.__get_time_to_finish()
-        displayed_time_to_finish = self.__format_time(time_to_finish)
-        passed_time = self.__get_passed_time()
-        displayed_passed_time = self.__format_time(passed_time)
-        return f'[{displayed_passed_time} < {displayed_time_to_finish}]'
+        displayed_time_to_finish = self.__format_time(self.__get_time_to_finish())
+        displayed_passed_time = self.__format_time(self.__get_passed_time())
+
+        average_iteration_duration = self.__get_average_iteration_duration()
+        displayed_duration = self.__format_time(average_iteration_duration)
+        return f'[{displayed_passed_time} < {displayed_time_to_finish}, {displayed_duration}/{self.unit}]'
 
     def __get_iterations_section(self):
         total_digits_number = len(str(self.total))
-        return f'{self.iteration: {total_digits_number}}{self.unit}/{self.total}{self.unit}'
+        return f'{self.iteration:{total_digits_number}}{self.unit}/{self.total}{self.unit}'
 
     def __get_completion_percentage(self):
         percentage = int(self.iteration / self.total * 100)
-        return f'{percentage: 3}%'
+        return f'{percentage:3}%'
 
     @classmethod
     def __format_time(cls, seconds):
@@ -83,9 +112,7 @@ class ProgressBar:
             seconds = int(seconds % 60)
             formatted_time = f"{minutes:02}m{seconds:02}s"
         else:
-            milliseconds = int((seconds % 1) * 100)
-            seconds = int(seconds)
-            formatted_time = f"{seconds:02}s{milliseconds:03}ms"
+            formatted_time = f"{seconds:05.2f}s"
 
         return formatted_time
 
