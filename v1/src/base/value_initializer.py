@@ -10,7 +10,12 @@ class ValueInitializer:
         self.__init_function = init_function
 
     def __call__(self, shape):
-        return self.__init_function(shape)
+        create_array = self.__init_function(shape)
+
+        if create_array.ndim == 1:
+            create_array = np.expand_dims(create_array, axis=0)
+
+        return create_array
 
 def zero_initializer() -> ValueInitializer:
     def zero_init_function(shape) -> np.array:
