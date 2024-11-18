@@ -8,11 +8,14 @@ from v1.src.utils import ProgressBar
 class ProgressBarCallback(Callback):
     def __init__(
             self,
-            monitors: [str] = None,
+            monitors: [str] or str = None,
             # count_mode = 'batch' or 'sample'
             count_mode: str = 'batch'
     ):
         super().__init__()
+
+        if isinstance(monitors, str):
+            monitors = [monitors]
 
         self.monitors = monitors or ["average_loss", "accuracy"]
         self.count_mode = _check_count_mode(count_mode)
@@ -48,41 +51,48 @@ class ProgressBarCallback(Callback):
         print(f"Epoch: {epoch+1}/{self.epochs}", file=self.out_stream)
 
     def on_train_epoch_start(self, epoch, state_dict=None):
-        self.progress_bar = ProgressBar(
-            total=self.train_total,
-            prefix="train: "
-        )
+        if self.train_total > 0:
+            self.progress_bar = ProgressBar(
+                total=self.train_total,
+                prefix="train: "
+            )
 
     def on_train_batch_end(self, batch_idx, metric_states, state_dict=None):
         merged_metric_dict = dict(ChainMap(*metric_states))
-        self.__update_progress_bar_postfix(merged_metric_dict)
-        self.progress_bar.update(increase=self.update_step)
+        self.__update_progress_bar(merged_metric_dict)
 
     def on_train_epoch_end(self, epoch, metric_states, state_dict=None):
-        self.progress_bar.close()
-        self.progress_bar = None
+        self.__clear_progress_bar()
 
     def on_test_epoch_start(self, epoch, state_dict=None):
-        self.progress_bar = ProgressBar(
-            total=self.test_total,
-            prefix="test:  "
-        )
+        if self.test_total > 0:
+            self.progress_bar = ProgressBar(
+                total=self.test_total,
+                prefix="test:  "
+            )
 
     def on_test_batch_end(self, batch_idx, metric_states, state_dict=None):
         merged_metric_dict = dict(ChainMap(*metric_states))
-        self.__update_progress_bar_postfix(merged_metric_dict)
-        self.progress_bar.update(increase=self.update_step)
+        self.__update_progress_bar(merged_metric_dict)
+
 
     def on_test_epoch_end(self, epoch, metric_states, state_dict=None):
-        self.progress_bar.close()
-        self.progress_bar = None
+        self.__clear_progress_bar()
 
-    def __update_progress_bar_postfix(self, metric_dict):
-        monitor_items = {monitor: metric_dict[monitor]
-                         for monitor in self.monitors
-                         if monitor in metric_dict}
-        monitors_str = ", ".join(f"{key}: {value:.3f}" for key, value in monitor_items.items())
-        self.progress_bar.set_postfix(monitors_str)
+    def __clear_progress_bar(self):
+        if self.progress_bar:
+            self.progress_bar.close()
+            self.progress_bar = None
+
+    def __update_progress_bar(self, metric_dict):
+        if self.progress_bar:
+            monitor_items = {monitor: metric_dict[monitor]
+                             for monitor in self.monitors
+                             if monitor in metric_dict}
+            monitors_str = ", ".join(f"{key}: {value:.3f}" for key, value in monitor_items.items())
+            self.progress_bar.set_postfix(monitors_str)
+
+            self.progress_bar.update(increase=self.update_step)
 
 def _check_count_mode(count_mode):
     allowed_values = ['batch', 'sample']
