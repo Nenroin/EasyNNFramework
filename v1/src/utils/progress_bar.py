@@ -2,6 +2,9 @@ import sys
 import time
 from typing import TextIO
 
+import numpy as np
+
+
 class ProgressBar:
     def __init__(
             self,
@@ -92,7 +95,11 @@ class ProgressBar:
         displayed_time_to_finish = self.__format_time(self.__get_time_to_finish())
         displayed_passed_time = self.__format_time(self.__get_passed_time())
 
-        iterations_per_second = 1 / self.__get_average_iteration_duration()
+        average_iteration_duration = self.__get_average_iteration_duration()
+        if average_iteration_duration == 0:
+            iterations_per_second = np.nan
+        else:
+            iterations_per_second = 1 / self.__get_average_iteration_duration()
         return f'[{displayed_passed_time} < {displayed_time_to_finish}, {iterations_per_second:.3f}{self.unit}/s]'
 
     def __get_iterations_section(self):
