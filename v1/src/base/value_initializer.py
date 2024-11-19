@@ -56,10 +56,12 @@ def orthogonal_initializer() -> ValueInitializer:
 
     return ValueInitializer(orthogonal_init_function)
 
-def direct_assign_initializer(weights: np.array) -> ValueInitializer:
-    def direct_init_function(shape) -> np.array:
-        if weights.shape != shape:
-            raise ValueError("wrong dimensions")
-        return weights
+def torch_rnn_initializer() -> ValueInitializer:
+    def torch_rnn_init_function(shape) -> np.array:
+        if isinstance(shape, int):
+            hidden_size = shape
+        else:
+            hidden_size = shape[-1]
+        return np.random.random(shape) * np.sqrt(1 / hidden_size)
 
-    return ValueInitializer(direct_init_function)
+    return ValueInitializer(torch_rnn_init_function)
