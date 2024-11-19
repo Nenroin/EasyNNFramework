@@ -1,5 +1,4 @@
 from abc import ABC
-from time import sleep
 
 import numpy as np
 
@@ -12,7 +11,7 @@ from v1.src.base.metrics.metric import Metric
 from v1.src.base.metrics.metric_list import MetricList
 from v1.src.base.models.model import Model
 from v1.src.base.optimizers.optimizer import Optimizer
-from v1.src.utils.sequential_model_summary_util import print_model_summary
+from v1.src.utils.sequential_model_summary_util import print_sequential_model_summary
 
 
 class SequentialModel(Model, ABC):
@@ -54,17 +53,13 @@ class SequentialModel(Model, ABC):
         for epoch in range(epochs):
             callbacks.on_epoch_start(epoch)
 
-            callbacks.on_train_epoch_start(epoch)
-            self.train_epoch(train_data, callbacks=callbacks)
-            callbacks.on_train_epoch_end(epoch, self.metrics.get_metric_state())
+            self.train_epoch(train_data, callbacks=callbacks, epoch=epoch)
 
             # stop if stop_training flag was set in on_train_epoch_end callbacks
             if self.stop_training:
                 break
 
-            callbacks.on_test_epoch_start(epoch)
             self.test_epoch(test_data, callbacks=callbacks)
-            callbacks.on_test_epoch_end(epoch, self.metrics.get_metric_state())
 
             callbacks.on_epoch_end(epoch)
         callbacks.on_fit_end()
@@ -72,11 +67,9 @@ class SequentialModel(Model, ABC):
     def train_epoch(
             self,
             train_data: DataBatchWrapper,
-            callbacks: CallbackList or [Callback] = None
+            callbacks: CallbackList or [Callback] = None,
+            epoch: int = 1,
     ):
-        if len(train_data) == 0:
-            return
-
         if not isinstance(callbacks, CallbackList):
             callbacks = CallbackList(
                 model=self,
@@ -85,13 +78,15 @@ class SequentialModel(Model, ABC):
                 batch_size=train_data.batch_size,
             )
 
+        callbacks.on_train_epoch_start(epoch)
+
         self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(train_data):
             self.optimizer.zero_grad()
 
             callbacks.on_train_batch_start(i)
 
-            y_pred_batch = self.forward(x_batch)
+            y_pred_batch = self.forward(x_batch, training=True)
 
             loss_gradient_batch = np.array([
                 self.loss_function.gradient(y_pred=y_pred, e=e)
@@ -110,16 +105,14 @@ class SequentialModel(Model, ABC):
             if self.stop_training:
                 break
 
-
+        callbacks.on_train_epoch_end(epoch, self.metrics.get_metric_state())
 
     def test_epoch(
             self,
             test_data: DataBatchWrapper,
-            callbacks: CallbackList or [Callback] = None
+            callbacks: CallbackList or [Callback] = None,
+            epoch: int = 1,
     ):
-        if len(test_data) == 0:
-            return
-
         if not isinstance(callbacks, CallbackList):
             callbacks = CallbackList(
                 model=self,
@@ -128,14 +121,18 @@ class SequentialModel(Model, ABC):
                 batch_size=test_data.batch_size,
             )
 
+        callbacks.on_test_epoch_start(epoch)
+
         self.metrics.clear_state()
         for i, (x_batch, e_batch) in enumerate(test_data):
             callbacks.on_test_batch_start(i)
 
-            y_batch = self.forward(x_batch)
+            y_batch = self.forward(x_batch, training=False)
             [self.metrics.update_state(y, e) for y, e in zip(y_batch, e_batch)]
 
             callbacks.on_test_batch_end(i, self.metrics.get_metric_state())
+
+        callbacks.on_test_epoch_end(epoch, self.metrics.get_metric_state())
 
     def forward(self, in_batch: np.ndarray, training=True) -> np.ndarray:
         if in_batch.ndim == 1:
@@ -153,18 +150,18 @@ class SequentialModel(Model, ABC):
             loss_gradient_batch = layer.backward(loss_gradient_batch, optimizer=self.optimizer)
 
     def add_layer(self, layer: Layer):
-        layer.init_layers_params(
+        layer.init_layer_params(
             prev_layer_neurons=self.layers[-1].neurons,
             reassign_existing=True
         )
         self.layers.append(layer)
 
-    def init_layers_params(self, reassign_existing=True):
+    def init_layer_params(self, reassign_existing=True):
         for i in range(1, len(self.layers)):
-            self.layers[i].init_layers_params(
+            self.layers[i].init_layer_params(
                 prev_layer_neurons=self.layers[i-1].neurons,
                 reassign_existing=reassign_existing
             )
 
     def summary(self):
-        print_model_summary(self)
+        print_sequential_model_summary(self)
