@@ -16,7 +16,7 @@ class SerializeMetaClass(
         super().__init__(name, bases, namespace)
 
         if not hasattr(cls, '_SerializeMetaClass__serialize_storage'):
-            cls.__serialize_storage = SerializeStorage(
+            cls.__saved_field_generators_storage = SerializeStorage(
                 storage_name=cls.__name__,
             )
             cls.__serialized_fields = []
@@ -40,7 +40,7 @@ class SerializeMetaClass(
             state = {
                 id_field: getattr(self, id_field),
                 **{
-                    saved_field: getattr(self, saved_field) for saved_field in cls.__serialized_fields
+                    serialized_field: getattr(self, serialized_field) for serialized_field in cls.__serialized_fields
                 }
             }
             return state
@@ -48,21 +48,23 @@ class SerializeMetaClass(
         cls.__getstate__ = getstate
 
         def setstate(self, state):
-            if id_field in state:
-                if len(cls.__saved_fields) != 0 and state[id_field] in cls.__serialize_storage.generators:
-                    generator = cls.__serialize_storage[state[id_field]]
-                    generated_instance = generator()
-                    for replaced_field in cls.__saved_fields:
-                        setattr(self, replaced_field, getattr(generated_instance, replaced_field))
-                if len(cls.__serialized_fields) != 0:
-                    for saved_field in cls.__serialized_fields:
-                        setattr(self, saved_field, state[saved_field])
+            setattr(self, id_field, state[id_field])
+
+            if len(cls.__saved_fields) != 0 and state[id_field] in cls.__saved_field_generators_storage.generators:
+                generator = cls.__saved_field_generators_storage[state[id_field]]
+                generated_instance = generator()
+                for replaced_field in cls.__saved_fields:
+                    setattr(self, replaced_field, getattr(generated_instance, replaced_field))
+
+            if len(cls.__serialized_fields) != 0:
+                for saved_field in cls.__serialized_fields:
+                    setattr(self, saved_field, state[saved_field])
 
         cls.__setstate__ = setstate
 
         def register_generators(generators: []):
             if isinstance(generators, list):
-                cls.__serialize_storage.register_generators(
+                cls.__saved_field_generators_storage.register_generators(
                     {
                         getattr(generator(), id_field): generator for generator in generators
                     }
@@ -71,7 +73,7 @@ class SerializeMetaClass(
         cls.__register_generators__ = register_generators
 
         def register_generator(generator):
-            cls.__serialize_storage.register_generator(
+            cls.__saved_field_generators_storage.register_generator(
                 generator_name=generator[id_field],
                 generator_fn=generator
             )
