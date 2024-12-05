@@ -89,8 +89,8 @@ class LinearLayer(Layer):
         bias_gradient = - de_ds.sum(axis=0)
         optimizer(param=self.bias, param_gradient=bias_gradient)
 
-    def init_layers_params(self, prev_layer_neurons, reassign_existing=True):
-        super().init_layers_params(prev_layer_neurons, reassign_existing=reassign_existing)
+    def init_layer_params(self, prev_layer_neurons, reassign_existing=True):
+        super().init_layer_params(prev_layer_neurons, reassign_existing=reassign_existing)
         if self.use_bias and (reassign_existing or self.bias is None):
             self.bias = self.bias_initializer(self.neurons)
 

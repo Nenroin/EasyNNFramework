@@ -23,6 +23,6 @@ class InputLayer(Layer):
     def forward(self, in_batch: np.array, training=True) -> np.array:
         return in_batch
 
-    def backward(self, layer_gradient_batch: np.array, optimizer: Optimizer):
-        return layer_gradient_batch
+    def backward(self, layer_gradient: np.array, optimizer: Optimizer):
+        return layer_gradient
 

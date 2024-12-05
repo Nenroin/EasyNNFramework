@@ -2,7 +2,7 @@ from v1.src.base.activation import *
 from abc import ABC, abstractmethod
 
 from v1.src.base.optimizers.optimizer import Optimizer
-from v1.src.base.value_initializer import uniform_initializer, ValueInitializer, direct_assign_initializer
+from v1.src.base.value_initializer import ValueInitializer
 
 
 class Layer(ABC):
@@ -29,10 +29,10 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def backward(self, next_layer_gradient_batch: np.array, optimizer: Optimizer) -> np.array:
+    def backward(self, layer_gradient: np.array, optimizer: Optimizer) -> np.array:
         pass
 
-    def init_layers_params(self, prev_layer_neurons, reassign_existing=True):
+    def init_layer_params(self, prev_layer_neurons, reassign_existing=True):
         if reassign_existing or self.prev_weights is None:
             self.prev_weights = self.prev_weights_initializer((prev_layer_neurons, self.neurons))
 
@@ -52,4 +52,3 @@ class Layer(ABC):
         self.activation = state['activation']
         self.is_trainable = state['is_trainable']
         self.prev_weights = state['prev_weights']
-        self.prev_weights_initializer = direct_assign_initializer(state['prev_weights'])
