@@ -14,15 +14,12 @@ class MatchingFunction(
                  name: str = "",
                  matching_fn: Callable[[np.array, np.array], bool] = None,
                  ):
-        self.__matching_function = matching_fn
-
         self.name = name
+
+        self.__matching_function = matching_fn
 
     def __call__(self, y_pred: np.array, e: np.array) -> np.array:
         return self.__matching_function(y_pred, e)
-
-    def get_config(self):
-        return self.name
 
 def one_hot_matching_function():
     def matching_function(y_pred, e):
