@@ -1,4 +1,4 @@
-from v1.src.base.loss_function import LossFunction, mse
+from v1.src.base.loss_function import LossFunction
 from v1.src.base.metrics.metric import Metric
 
 

@@ -1,5 +1,4 @@
 from v1.src.base.callbacks import Callback
-from v1.src.utils import is_overridden
 
 
 class CallbackList(Callback):

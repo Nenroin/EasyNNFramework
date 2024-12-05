@@ -1,4 +1,4 @@
-from v1.src.base.metrics.matching_functon import MatchingFunction, one_hot_matching_function
+from v1.src.base.metrics.matching_functon import MatchingFunction
 from v1.src.base.metrics.metric import Metric
 
 
