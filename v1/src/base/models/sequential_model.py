@@ -156,7 +156,7 @@ class SequentialModel(Model, ABC):
         )
         self.layers.append(layer)
 
-    def init_layer_params(self, reassign_existing=True):
+    def init_layers_params(self, reassign_existing=True):
         for i in range(1, len(self.layers)):
             self.layers[i].init_layer_params(
                 prev_layer_neurons=self.layers[i-1].neurons,
