@@ -1,7 +1,6 @@
 import numpy as np
 
 from v1.src.base.activation import Activation, linear
-from v1.src.base.layers.input_layer import InputLayer
 from v1.src.base.optimizers.optimizer import Optimizer
 from v1.src.base.value_initializer import ValueInitializer, zero_initializer, uniform_initializer
 from v1.src.base.layers.layer import Layer
@@ -12,10 +11,11 @@ class LinearLayer(Layer):
             self,
             neurons: int,
             activation : Activation = linear(),
+            is_trainable: bool = True,
+            prev_weights_initializer: ValueInitializer = uniform_initializer(),
+
             use_bias: bool = True,
             bias_initializer: ValueInitializer = zero_initializer(),
-            prev_weights_initializer: ValueInitializer = uniform_initializer(),
-            is_trainable: bool = True,
     ):
         super().__init__(
             neurons=neurons,
@@ -39,9 +39,11 @@ class LinearLayer(Layer):
         self.prev_in = in_batch
         self.prev_s = np.dot(in_batch, self.prev_weights) - (self.bias if self.use_bias else 0)
 
-        self.prev_out = np.array([
-            self.activation(prev_s_el) for prev_s_el in self.prev_s
-        ])
+        self.prev_out = np.apply_along_axis(
+                    self.activation,
+                    axis=self.prev_s.ndim - 1,
+                    arr=self.prev_s,
+                )
 
         return self.prev_out
 
@@ -49,11 +51,11 @@ class LinearLayer(Layer):
         de_dy = layer_gradient
         dy_ds = np.apply_along_axis(
                 self.activation.jacobian,
-                axis=1,
+                axis=self.prev_s.ndim - 1,
                 arr=self.prev_s,
             )
 
-        de_ds = np.einsum('lj,lkj->lk',
+        de_ds = np.einsum('...lj,...lkj->lk',
                           de_dy,
                           dy_ds,
                           optimize='optimal',
@@ -72,7 +74,7 @@ class LinearLayer(Layer):
         if self.prev_weights is None or not self.is_trainable:
             return
 
-        weights_gradient = np.einsum('lj,lk->kj',
+        weights_gradient = np.einsum('...lj,...lk->kj',
                                      de_ds,
                                      self.prev_in,
                                      optimize='optimal',
