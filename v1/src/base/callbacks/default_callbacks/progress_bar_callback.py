@@ -1,5 +1,6 @@
 import sys
 from collections import ChainMap
+from typing import Literal, TextIO, Callable
 
 from v1.src.base.callbacks import Callback
 from v1.src.utils import ProgressBar
@@ -9,15 +10,23 @@ class ProgressBarCallback(Callback):
     def __init__(
             self,
             monitors: [str] or str = None,
-            # count_mode = 'batch' or 'sample'
-            count_mode: str = 'batch'
+            monitor_formatters: {str: Callable[[float], str]} = None,
+            count_mode: Literal['batch', 'sample'] = 'batch',
+            out_stream: TextIO = sys.stdout,
     ):
         super().__init__()
 
         if isinstance(monitors, str):
             monitors = [monitors]
-
         self.monitors = monitors or ["average_loss", "accuracy"]
+
+        self.monitor_formatters = monitor_formatters or {}
+        self.monitor_formatters.update({
+            monitor: lambda val: f'{val:.3f}'
+            for monitor in self.monitors
+            if monitor not in self.monitor_formatters
+        })
+
         self.count_mode = _check_count_mode(count_mode)
         self.progress_bar: ProgressBar = None
 
@@ -26,7 +35,7 @@ class ProgressBarCallback(Callback):
         self.train_batches = 1
         self.batch_size = 100
 
-        self.out_stream = sys.stderr
+        self.out_stream = out_stream
 
     @property
     def test_total(self):
@@ -54,7 +63,8 @@ class ProgressBarCallback(Callback):
         if self.train_total > 0:
             self.progress_bar = ProgressBar(
                 total=self.train_total,
-                prefix="train: "
+                prefix="train: ",
+                out_stream=self.out_stream
             )
 
     def on_train_batch_end(self, batch_idx, metric_states, state_dict=None):
@@ -68,7 +78,8 @@ class ProgressBarCallback(Callback):
         if self.test_total > 0:
             self.progress_bar = ProgressBar(
                 total=self.test_total,
-                prefix="test:  "
+                prefix="test:  ",
+                out_stream=self.out_stream
             )
 
     def on_test_batch_end(self, batch_idx, metric_states, state_dict=None):
@@ -89,7 +100,7 @@ class ProgressBarCallback(Callback):
             monitor_items = {monitor: metric_dict[monitor]
                              for monitor in self.monitors
                              if monitor in metric_dict}
-            monitors_str = ", ".join(f"{key}: {value:.3f}" for key, value in monitor_items.items())
+            monitors_str = ", ".join(f"{key}: {self.monitor_formatters[key](value)}" for key, value in monitor_items.items())
             self.progress_bar.set_postfix(monitors_str)
 
             self.progress_bar.update(increase=self.update_step)
