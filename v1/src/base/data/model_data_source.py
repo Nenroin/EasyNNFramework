@@ -40,12 +40,8 @@ class ModelDataSource:
         return DataBatchWrapper(self.__test_data, batch_size)
 
     def proceed_augmentations(self, data, data_augmentations):
-        # print("proceed_augmentations")
         for augmentation in data_augmentations:
-            # start = timer()
             data = self.proceed_augmentation(data, augmentation)
-            # end = timer()
-            # print(f"augmentation {augmentation.name} = {end - start} seconds")
         return data
 
     @classmethod
