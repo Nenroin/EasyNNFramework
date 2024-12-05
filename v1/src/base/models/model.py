@@ -39,11 +39,14 @@ class Model(ABC):
             loss_function: LossFunction = None,
             optimizer: Optimizer = None,
             metrics: [Metric] or MetricList = None,
+            reassign_existing_weights: bool = True,
     ):
         self.loss_function = loss_function or self.loss_function
         self.optimizer = optimizer or self.optimizer
         if metrics is not None and not isinstance(metrics, MetricList):
             self.metrics = MetricList(metrics)
+
+        self.init_layers_params(reassign_existing=reassign_existing_weights)
 
     @abstractmethod
     def fit(self, model_data_source: ModelDataSource, epochs = 1, callbacks: CallbackList or [Callback] = None):
