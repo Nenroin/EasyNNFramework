@@ -55,7 +55,7 @@ class LinearLayer(Layer):
                 arr=self.prev_s,
             )
 
-        de_ds = np.einsum('...lj,...lkj->lk',
+        de_ds = np.einsum('...lj,...lkj->...lk',
                           de_dy,
                           dy_ds,
                           optimize='optimal',
