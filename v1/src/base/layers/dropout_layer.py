@@ -23,8 +23,8 @@ class DropoutLayer(Layer):
 
     def forward(self, in_batch: np.array, training=True) -> np.array:
         if training:
-            self.masks = (np.random.binomial(n=1, p=(1 - self.rate), size=in_batch.shape[1] * in_batch.shape[0])
-                          .reshape(in_batch.shape[0], -1))
+            self.masks = (np.random.binomial(n=1, p=(1 - self.rate), size=in_batch.size)
+                          .reshape(in_batch.shape))
             in_batch = np.multiply(in_batch, self.masks)
 
         return in_batch
