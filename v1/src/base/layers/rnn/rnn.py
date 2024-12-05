@@ -154,7 +154,7 @@ class RNNLayer(RNNBase):
         if not self.use_bias or not self.is_trainable:
             return
 
-        bias_gradient = - de_ds.sum(axis=0)
+        bias_gradient = - de_ds.sum(axis=tuple(range(de_ds.ndim - 1)))
         optimizer(param=self.bias[stacked_layer], param_gradient=bias_gradient)
 
     def __adjust_prev_weights(self, optimizer: Optimizer, stacked_layer, de_ds):

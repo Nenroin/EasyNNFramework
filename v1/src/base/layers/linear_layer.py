@@ -86,7 +86,7 @@ class LinearLayer(Layer):
         if not self.use_bias or not self.is_trainable:
             return
 
-        bias_gradient = - de_ds.sum(axis=0)
+        bias_gradient = - de_ds.sum(axis=tuple(range(de_ds.ndim - 1)))
         optimizer(param=self.bias, param_gradient=bias_gradient)
 
     def init_layer_params(self, prev_layer_neurons, reassign_existing=True):
