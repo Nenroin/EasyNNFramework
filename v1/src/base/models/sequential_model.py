@@ -54,14 +54,13 @@ class SequentialModel(Model, ABC):
             callbacks.on_epoch_start(epoch)
 
             self.train_epoch(train_data, callbacks=callbacks, epoch=epoch)
-
-            # stop if stop_training flag was set in on_train_epoch_end callbacks
-            if self.stop_training:
-                break
-
             self.test_epoch(test_data, callbacks=callbacks)
 
             callbacks.on_epoch_end(epoch)
+
+            # stop if stop_training flag was set in callbacks
+            if self.stop_training:
+                break
         callbacks.on_fit_end()
 
     def train_epoch(
