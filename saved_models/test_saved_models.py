@@ -1,14 +1,6 @@
-from v1.src.base.activation import *
-from v1.src.base.data import data_augmentation
-from v1.src.base.data.model_data_source import ModelDataSource
-from v1.src.base.layers.input_layer import InputLayer
-from v1.src.base.layers.linear_layer import *
-from v1.src.base.loss_function import mse
-from v1.src.base.metrics.accuracy_metric import one_hot_matches_metric
-from v1.src.base.models.custom_sequential_model import *
+from v1.src.base.callbacks.default_callbacks import ProgressBarCallback
+from v1.src.base.data import data_augmentation, ModelDataSource
 from v1.src.base.models.model import Model
-from v1.src.base.optimizers.adam import Adam
-from v1.src.base.value_initializer import he_initializer
 from v1.src.mnist.mnist_dataloader import MnistDataloader
 
 mnist_dataloader = MnistDataloader(
@@ -31,6 +23,11 @@ data_source = ModelDataSource(
     batch_size=batch_size,
 )
 
-model = Model.load_from_file("model_Adam_lr0.0011.txt")
+model = Model.load_from_file("2_hl_Adam_lr0.0013.txt")
 
-model.test_epoch(test_data=data_source.test_data_batches(1))
+model.test_epoch(
+    test_data=data_source.test_data_batches(1),
+    callbacks=[
+        ProgressBarCallback(),
+    ]
+)

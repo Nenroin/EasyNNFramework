@@ -1,15 +1,11 @@
-import cProfile
-import pstats
-from os.path import join
-
-
 from v1.src.base.activation import *
-from v1.src.base.data import data_augmentation
-from v1.src.base.data.model_data_source import ModelDataSource
-from v1.src.base.layers.input_layer import InputLayer
+from v1.src.base.callbacks.default_callbacks import ProgressBarCallback
+from v1.src.base.data import data_augmentation, ModelDataSource
+from v1.src.base.layers import InputLayer
 from v1.src.base.layers.linear_layer import *
+from v1.src.base.loss_function import mse
 from v1.src.base.metrics import AccuracyMetric, one_hot_matching_function
-from v1.src.base.models.custom_sequential_model import *
+from v1.src.base.models import SequentialModel
 from v1.src.base.optimizers.adam import Adam
 from v1.src.base.value_initializer import he_initializer
 from v1.src.mnist.mnist_dataloader import MnistDataloader
@@ -27,14 +23,6 @@ batch_size = 200
 data_source = ModelDataSource(
     train_data=(x_train, y_train),
     test_data=(x_test, y_test),
-    train_data_augmentations=[
-        data_augmentation.scaling_pil(
-            copies=1
-        ),
-        data_augmentation.cropping(
-            copies=1
-        ),
-    ],
     data_augmentations=[
         data_augmentation.flatten(),
         data_augmentation.normalize(),
@@ -44,7 +32,7 @@ data_source = ModelDataSource(
     batch_size=batch_size,
 )
 
-model = CustomSequentialModel(
+model = SequentialModel(
     layers=[
         InputLayer(784),
         LinearLayer(256,
@@ -62,20 +50,22 @@ model = CustomSequentialModel(
     ]
 )
 
-model.init_layers_params()
-
 print(f"learning_rate: {0.0013}")
 
-model.build(loss_function=mse(),
-            optimizer=Adam(learning_rate=0.0013),
-            metric=AccuracyMetric(matching_function=one_hot_matching_function()))
+model.build(
+    loss_function=mse(),
+    optimizer=Adam(learning_rate=0.0013),
+    metrics=[
+        AccuracyMetric(matching_function=one_hot_matching_function())
+    ]
+)
 
-model.fit(model_data_source=data_source,
-          epochs=10)
+model.fit(
+    model_data_source=data_source,
+    epochs=10,
+    callbacks=[
+        ProgressBarCallback(),
+    ],
+)
 
-model.save_to_file("model_Adam_lr0.0013.txt")
-
-# pr.disable()
-# stats = pstats.Stats(pr)
-# stats.sort_stats(pstats.SortKey.TIME)
-# stats.dump_stats("profile_nn_10_epochs.prof")
+model.save_to_file("2_hl_Adam_lr0.0013.txt")

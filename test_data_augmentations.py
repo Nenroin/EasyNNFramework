@@ -31,7 +31,7 @@ def show_images(images, title_texts):
     for x, _ in zip(images, title_texts):
         image = x
         plt.subplot(rows, cols, index)
-        plt.imshow(image, cmap=plt.cm.gray)
+        plt.imshow(image)
         index += 1
 
     plt.show()
