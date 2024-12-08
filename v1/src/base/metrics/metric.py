@@ -21,5 +21,5 @@ class Metric(ABC):
         pass
 
     @abstractmethod
-    def get_metric_value(self):
+    def get_published_value(self):
         pass

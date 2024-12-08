@@ -49,5 +49,5 @@ class LossMetric(Metric):
         }
         return result
 
-    def get_metric_value(self):
+    def get_published_value(self):
         return f'{self.published_name}: {self.average_loss}'

@@ -29,11 +29,11 @@ class MetricList(Metric):
                 states.append(metric.get_metric_state())
             return states
 
-    def get_metric_value(self):
+    def get_published_value(self):
         if self.metrics:
             values = []
             for metric in self.metrics:
-                values.append(metric.get_metric_value())
+                values.append(metric.get_published_value())
             return values
 
     def __iter__(self):
