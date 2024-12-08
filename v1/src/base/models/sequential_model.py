@@ -54,7 +54,7 @@ class SequentialModel(Model, ABC):
             callbacks.on_epoch_start(epoch)
 
             self.train_epoch(train_data, callbacks=callbacks, epoch=epoch)
-            self.test_epoch(test_data, callbacks=callbacks)
+            self.test_epoch(test_data, callbacks=callbacks, epoch=epoch)
 
             callbacks.on_epoch_end(epoch)
 
