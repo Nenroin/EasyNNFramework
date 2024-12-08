@@ -95,7 +95,9 @@ class RNNBase(Layer):
         state = super().__getstate__()
         state['use_bias'] = self.use_bias
         state['bias'] = self.bias
+        state['bias_initializer'] = self.bias_initializer
         state['recurrent_weights'] = self.recurrent_weights
+        state['recurrent_weights_initializer'] = self.recurrent_weights_initializer
         state['stacked_layers'] = self.stacked_layers
         state['dropout'] = self.dropout
         state['recurrent_dropout'] = self.recurrent_dropout
@@ -107,7 +109,9 @@ class RNNBase(Layer):
         super().__setstate__(state)
         self.use_bias = state['use_bias']
         self.bias = state['bias']
+        self.bias_initializer = state['bias_initializer']
         self.recurrent_weights = state['recurrent_weights']
+        self.recurrent_weights_initializer = state['recurrent_weights_initializer']
         self.stacked_layers = state['stacked_layers']
         self.dropout = state['dropout']
         self.recurrent_dropout = state['recurrent_dropout']

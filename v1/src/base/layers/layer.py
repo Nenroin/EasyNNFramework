@@ -43,6 +43,7 @@ class Layer(ABC):
             'activation': self.activation,
             'is_trainable': self.is_trainable,
             'prev_weights': self.prev_weights,
+            'prev_weights_initializer': self.prev_weights_initializer,
         }
         return state
 
@@ -52,3 +53,4 @@ class Layer(ABC):
         self.activation = state['activation']
         self.is_trainable = state['is_trainable']
         self.prev_weights = state['prev_weights']
+        self.prev_weights_initializer = state['prev_weights_initializer']
