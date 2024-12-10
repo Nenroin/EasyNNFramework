@@ -25,4 +25,3 @@ class InputLayer(Layer):
 
     def backward(self, layer_gradient: np.array, optimizer: Optimizer):
         return layer_gradient
-

@@ -18,6 +18,7 @@ class ProgressBarCallback(Callback):
 
         if isinstance(monitors, str):
             monitors = [monitors]
+
         self.monitors = monitors or ["average_loss", "accuracy"]
 
         self.monitor_formatters = monitor_formatters or {}
@@ -64,7 +65,8 @@ class ProgressBarCallback(Callback):
             self.progress_bar = ProgressBar(
                 total=self.train_total,
                 prefix="train: ",
-                out_stream=self.out_stream
+                out_stream=self.out_stream,
+                fill='#'
             )
 
     def on_train_batch_end(self, batch_idx, metric_states, state_dict=None):
@@ -79,7 +81,8 @@ class ProgressBarCallback(Callback):
             self.progress_bar = ProgressBar(
                 total=self.test_total,
                 prefix="test:  ",
-                out_stream=self.out_stream
+                out_stream=self.out_stream,
+                fill='#'
             )
 
     def on_test_batch_end(self, batch_idx, metric_states, state_dict=None):

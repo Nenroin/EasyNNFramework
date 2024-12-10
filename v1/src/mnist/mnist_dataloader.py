@@ -15,7 +15,8 @@ class MnistDataloader(object):
         self.test_images_filepath = test_images_filepath
         self.test_labels_filepath = test_labels_filepath
 
-    def read_images_labels(self, images_filepath, labels_filepath):
+    @staticmethod
+    def read_images_labels(images_filepath, labels_filepath):
         labels = []
         with open(labels_filepath, 'rb') as file:
             magic, size = struct.unpack(">II", file.read(8))

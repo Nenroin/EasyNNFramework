@@ -8,18 +8,6 @@ class Callback:
         self.model = None
         self.state = None
 
-    # default state keys:
-    # in fit
-    #     epochs,
-    #     test_batches,
-    #     train_batches,
-    #     batch_size,
-    # in train_epoch
-    #     train_batches,
-    #     batch_size,
-    # in test_epoch
-    #     test_batches,
-    #     batch_size,
     def set_state(self, state):
         self.state = state
 

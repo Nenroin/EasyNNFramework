@@ -11,8 +11,6 @@ from v1.src.base.metrics.metric import Metric
 from v1.src.base.metrics.metric_list import MetricList
 from v1.src.base.models.model import Model
 from v1.src.base.optimizers.optimizer import Optimizer
-from v1.src.utils.sequential_model_summary_util import print_sequential_model_summary
-
 
 class SequentialModel(Model, ABC):
     def __init__(self,
@@ -163,4 +161,5 @@ class SequentialModel(Model, ABC):
             )
 
     def summary(self):
-        print_sequential_model_summary(self)
+        for layer in self.layers:
+            print(f"Layer name: {layer.name} Neurons: {layer.neurons} Activation: {layer.activation.name}")

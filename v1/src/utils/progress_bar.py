@@ -55,7 +55,8 @@ class ProgressBar:
         time_section = self.__get_time_section()
         iterations_section = self.__get_iterations_section()
         completion_percentage = self.__get_completion_percentage()
-        self.display(f'{self.prefix}{completion_percentage} |{bar}| {iterations_section} {time_section} {self.postfix}')
+        #self.display(f'{self.prefix}{completion_percentage} |{bar}| {iterations_section} {time_section} {self.postfix}')
+        self.display(f'{self.prefix}{completion_percentage} {time_section} {self.postfix}')
 
     def display(self, msg=None):
         self.last_print_time = self.start_time
@@ -100,7 +101,7 @@ class ProgressBar:
             iterations_per_second = np.nan
         else:
             iterations_per_second = 1 / self.__get_average_iteration_duration()
-        return f'[{displayed_passed_time} < {displayed_time_to_finish}, {iterations_per_second:.3f}{self.unit}/s]'
+        return f'[{displayed_passed_time} <- {displayed_time_to_finish}, {iterations_per_second:.3f}{self.unit}/s]'
 
     def __get_iterations_section(self):
         total_digits_number = len(str(self.total))

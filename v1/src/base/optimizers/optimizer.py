@@ -2,16 +2,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-
-
-class Optimizer(
-    # Use to serialize subclasses functions, now not need use
-
-    # Example
-    # metaclass=SerializeMetaClass,
-    # id_field='name',
-    # saved_fields = ['ser_fn'],
-):
+class Optimizer:
     def __init__(
             self,
             name: str,
@@ -35,4 +26,3 @@ class Optimizer(
     @abstractmethod
     def next_step(self):
         pass
-

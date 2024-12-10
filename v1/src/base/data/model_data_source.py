@@ -3,7 +3,6 @@ import numpy as np
 from v1.src.base.data.data_augmentation import DataAugmentation
 from v1.src.base.data.data_batch_wrapper import DataBatchWrapper
 
-
 class ModelDataSource:
     def __init__(
             self,
@@ -12,7 +11,7 @@ class ModelDataSource:
             test_data: (np.array, np.array) = None,
             test_data_augmentations: [DataAugmentation] = None,
             data_augmentations: [DataAugmentation] = None,
-            shuffle=True,
+            shuffle=False,
             batch_size=1,
     ):
         self.data_augmentations = data_augmentations or []

@@ -1,19 +1,13 @@
 import numpy as np
-
 from v1.src.base.optimizers.optimizer import Optimizer
 
-
-class Adam(
-    Optimizer,
-    # serialized_fields=['beta_1', 'beta_2', 'epsilon']
-):
+class Adam(Optimizer):
     def __init__(
             self,
             learning_rate=0.001,
             beta_1=0.9,
             beta_2=0.999,
-            epsilon=1e-07,
-            # amsgrad=False,
+            epsilon=1e-07
     ):
         super().__init__(
             name='Adam',
@@ -23,12 +17,8 @@ class Adam(
         self.beta_2 = beta_2
         self.epsilon = epsilon
 
-        # self.amsgrad = amsgrad
-
         self.parameters_m = None
         self.parameters_v = None
-
-        # self.max_v_corrected = 0
 
     def next_step(self):
         if self.parameters_m is None and self.parameters_v is None:
