@@ -18,6 +18,7 @@ mnist_dataloader = MnistDataloader(
     test_images_filepath="src/mnist/data/t10k-images-idx3-ubyte/t10k-images-idx3-ubyte",
     test_labels_filepath="src/mnist/data/t10k-labels-idx1-ubyte/t10k-labels-idx1-ubyte",
 )
+
 (x_train, y_train), (x_test, y_test) = mnist_dataloader.load_data()
 
 batch_size = 300
@@ -85,7 +86,7 @@ data_source = ModelDataSource(
 model = SequentialModel(
     layers=[
         InputLayer(784),
-        LinearLayer(392,
+        LinearLayer(512,
                     activation=relu(),
                     prev_weights_initializer=he_initializer()),
         LinearLayer(10,

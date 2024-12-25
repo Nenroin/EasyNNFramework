@@ -75,7 +75,7 @@ def scaling_pil(
         img_height, img_width = img.shape
 
         img_normalization = np.max(img)
-        pil_normalized_image = np.array(img / (img_normalization / 255), dtype=np.uint8)
+        pil_normalized_image = np.array(img, dtype=np.uint8)
 
         min_scale, max_scale = scale_range
 
@@ -85,8 +85,7 @@ def scaling_pil(
         augmented_datas = [(img, label)]
         for scale_value in scale_values:
             new_img_height, new_img_width = int(img_height * scale_value), int(img_width * scale_value)
-            new_img = (Image.fromarray(pil_normalized_image)
-                       .resize((new_img_height, new_img_width)))
+            new_img = (Image.fromarray(pil_normalized_image).resize((new_img_height, new_img_width)))
 
             if scale_value > 1:
                 top_left_position = ((new_img_height - img_height) // 2, (new_img_width - img_width) // 2)
